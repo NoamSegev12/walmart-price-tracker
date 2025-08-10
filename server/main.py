@@ -12,6 +12,7 @@ app = Flask(__name__)
 token = os.environ['SCRAPEDO_API_TOKEN']
 engine = create_engine(os.environ['DB_URL'].replace("postgresql://", "cockroachdb://"), echo=True)
 
+
 def scrape_walmart_data(target_url):
     url = f'http://api.scrape.do/?token={token}&url={target_url}'
     try:
@@ -24,12 +25,15 @@ def scrape_walmart_data(target_url):
         print(f"Error fetching data from API: {e}")
         return None
 
+
 @app.route('/api/search/<name>', methods=['POST'])
 def search_by_name(name):
-    target_url = urllib.parse.quote(f'https://developer.api.walmart.com/api-proxy/service/affil/product/v2/search?query=tv')
+    target_url = urllib.parse.quote(
+        f'https://developer.api.walmart.com/api-proxy/service/affil/product/v2/search?query=tv')
     products = scrape_walmart_data(target_url)
     print(products)
     return products
+
 
 @app.route('/api/search/<int:product_id>', methods=['POST'])
 def search_by_id(product_id):
@@ -49,11 +53,13 @@ def search_by_id(product_id):
         session.add(product)
         session.commit()
 
+
 @app.route('/api/products')
 def get_products():
     with Session(engine) as session:
         products = session.query(Product).all()
         return [p.to_dict() for p in products]
+
 
 @app.route('/api/products/<product_id>')
 def get_product(product_id):
@@ -62,6 +68,7 @@ def get_product(product_id):
         if not product:
             return {'error': 'Product not found'}, 404
         return product.to_dict()
+
 
 @app.route('/api/products/<product_id>', methods=['PUT'])
 def update_product(product_id):
@@ -81,6 +88,7 @@ def update_product(product_id):
         session.commit()
         return product.to_dict()
 
+
 @app.route('/api/products/<product_id>', methods=['DELETE'])
 def delete_product(product_id):
     with Session(engine) as session:
@@ -88,7 +96,24 @@ def delete_product(product_id):
         if not product:
             return jsonify({'error': 'Product not found'}), 404
         session.delete(product)
-        return None
+        try:
+            session.commit()
+            return jsonify({'success': 'Product deleted'}), 200
+        except Exception as e:
+            session.rollback()  # Rollback in case of an error during commit
+            print(f"Error during commit: {e}")
+            return jsonify({'error': 'Failed to delete product from database'}), 500
+
+@app.route('/api/products/<product_id>/', methods=['POST'])
+def add_product():
+    new_product = request.json
+    if not new_product:
+        return jsonify({"error": "Invalid or missing JSON"}), 400
+    with Session(engine) as session:
+        product = Product(**new_product)
+        session.add(product)
+        session.commit()
+        return product.to_dict()
 
 if __name__ == '__main__':
     app.run(debug=True)

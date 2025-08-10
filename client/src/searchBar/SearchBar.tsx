@@ -1,4 +1,4 @@
-import {AppBar, Toolbar, Box, Button} from '@mui/material';
+import {AppBar, Toolbar, Box} from '@mui/material';
 import {Search, SearchIconWrapper, StyledSearchField} from '../styledComponents/Search.tsx';
 import SearchIcon from '@mui/icons-material/Search';
 import logo from '../assets/walmartIcon.png';

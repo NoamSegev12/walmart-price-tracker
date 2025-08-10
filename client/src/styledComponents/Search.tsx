@@ -39,6 +39,7 @@ export const StyledSearchField = styled(TextField)(({ theme }) => ({
       width: '20ch',
     },
   },
+  width: '400px',
   borderRadius: theme.shape.borderRadius,
   '& .MuiOutlinedInput-notchedOutline': {
     border: 'none'
