@@ -28,5 +28,16 @@ export const theme = createTheme({
   },
   shape: {
     borderRadius: 5,
+  },
+  typography: {
+    fontFamily: '"Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;'
+  },
+  components: {
+    MuiButton: {
+      defaultProps: {
+        variant: 'contained',
+        size: 'small'
+      }
+    }
   }
 })

@@ -11,7 +11,7 @@ class Base(DeclarativeBase):
 class Product(Base):
     __tablename__ = "Products"
 
-    product_id: Mapped[int] = mapped_column(primary_key=True)
+    product_id: Mapped[str] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     current_price: Mapped[float] = mapped_column(nullable=False)
     rating: Mapped[float] = mapped_column(nullable=False)
@@ -20,3 +20,16 @@ class Product(Base):
     category: Mapped[Optional[str]] = mapped_column(String(255))
     created_at = Column(DateTime(timezone=True))
     last_update = Column(DateTime(timezone=True))
+
+    def to_dict(self):
+        return {
+            "product_id": self.product_id,
+            "title": self.title,
+            "current_price": self.current_price,
+            "rating": self.rating,
+            "image_url": self.image_url,
+            "product_url": self.product_url,
+            "category": self.category,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "last_update": self.last_update.isoformat() if self.last_update else None,
+        }

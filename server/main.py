@@ -1,25 +1,23 @@
 from datetime import datetime
 
-from flask import Flask
+from flask import Flask, request, jsonify
 import os
 import requests
 import urllib.parse
-
-from matplotlib.pyplot import title
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-
 from server.database import Product
 
 app = Flask(__name__)
-token = os.environ['SCRAPE_DO_TOKEN']
-engine = create_engine(os.environ['DB_URL'], echo=True)
+token = os.environ['SCRAPEDO_API_TOKEN']
+engine = create_engine(os.environ['DB_URL'].replace("postgresql://", "cockroachdb://"), echo=True)
 
 def scrape_walmart_data(target_url):
     url = f'http://api.scrape.do/?token={token}&url={target_url}'
     try:
         response = requests.request("GET", url)
         response.raise_for_status()
+        print(response.text)
         data = response.json()
         return data
     except requests.exceptions.RequestException as e:
@@ -28,8 +26,9 @@ def scrape_walmart_data(target_url):
 
 @app.route('/api/search/<name>', methods=['POST'])
 def search_by_name(name):
-    target_url = urllib.parse.quote(f'https://www.walmart.com/search?q={name}')
+    target_url = urllib.parse.quote(f'https://developer.api.walmart.com/api-proxy/service/affil/product/v2/search?query=tv')
     products = scrape_walmart_data(target_url)
+    print(products)
     return products
 
 @app.route('/api/search/<int:product_id>', methods=['POST'])
@@ -53,5 +52,43 @@ def search_by_id(product_id):
 @app.route('/api/products')
 def get_products():
     with Session(engine) as session:
-        return session.query(Product).all()
+        products = session.query(Product).all()
+        return [p.to_dict() for p in products]
 
+@app.route('/api/products/<product_id>')
+def get_product(product_id):
+    with Session(engine) as session:
+        product = session.query(Product).where(Product.product_id == product_id).first()
+        if not product:
+            return {'error': 'Product not found'}, 404
+        return product.to_dict()
+
+@app.route('/api/products/<product_id>', methods=['PUT'])
+def update_product(product_id):
+    new_data = request.json
+    if not new_data:
+        return jsonify({"error": "Invalid or missing JSON"}), 400
+    with Session(engine) as session:
+        product = session.get(Product, product_id)
+        if not product:
+            return jsonify({'error': 'Product not found'}), 404
+
+        for key, value in new_data.items():
+            if hasattr(product, key) and key != 'product_id':
+                setattr(product, key, value)
+
+        product.last_update = datetime.now()
+        session.commit()
+        return product.to_dict()
+
+@app.route('/api/products/<product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    with Session(engine) as session:
+        product = session.get(Product, product_id)
+        if not product:
+            return jsonify({'error': 'Product not found'}), 404
+        session.delete(product)
+        return None
+
+if __name__ == '__main__':
+    app.run(debug=True)

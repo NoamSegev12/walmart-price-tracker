@@ -5,7 +5,7 @@ import logo from '../assets/walmartIcon.png';
 import {useState} from 'react';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
-const SearchBar = ({setProducts}: any) => {
+const SearchBar = ({setProducts, setIsSearchDisplay}: any) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -33,9 +33,10 @@ const SearchBar = ({setProducts}: any) => {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   const handleMyShoppingCart = async () => {
+    setIsSearchDisplay(false);
     await fetchFromServer('/api/products');
   };
 
@@ -46,28 +47,32 @@ const SearchBar = ({setProducts}: any) => {
       return;
     }
     console.log(searchTerm);
-    await fetchFromServer(`/api/search/${encodeURIComponent(searchTerm)}`, {})
+    setIsSearchDisplay(true);
+    await fetchFromServer(`/api/search/${encodeURIComponent(searchTerm)}`, {method: 'POST'});
   };
 
   return (
-    <AppBar>
-      <Toolbar sx={{display: 'flex', justifyContent: 'space-between'}}>
-        <img src={logo} alt={'Walmart logo'} width={40} height={40}/>
-        <Box sx={{display: 'flex', alignItems: 'center'}}>
-          <Search>
-            <StyledSearchField
-              placeholder={'Search...'}
-              disabled={loading}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
-            <SearchIconWrapper onClick={handleSearch}>
-              <SearchIcon/>
-            </SearchIconWrapper>
-          </Search>
-        </Box>
+    <>
+      <AppBar>
+        <Toolbar sx={{display: 'flex', justifyContent: 'space-between'}}>
+          <img src={logo} alt={'Walmart logo'} width={40} height={40}/>
+          <Box sx={{display: 'flex', alignItems: 'center'}}>
+            <Search>
+              <StyledSearchField
+                placeholder={'Search...'}
+                disabled={loading}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+              <SearchIconWrapper onClick={handleSearch}>
+                <SearchIcon/>
+              </SearchIconWrapper>
+            </Search>
+          </Box>
           <ShoppingCartIcon sx={{marginLeft: 2, cursor: 'pointer'}} onClick={handleMyShoppingCart}/>
-      </Toolbar>
-    </AppBar>
+        </Toolbar>
+      </AppBar>
+      <Toolbar/>
+    </>
   );
 };
 

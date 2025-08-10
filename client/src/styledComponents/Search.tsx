@@ -35,7 +35,6 @@ export const StyledSearchField = styled(TextField)(({ theme }) => ({
     padding: theme.spacing(1, 1, 1, 1),
     paddingRight: `calc(1em + ${theme.spacing(3)})`,
     transition: theme.transitions.create('width'),
-    width: '100%',
     [theme.breakpoints.up('md')]: {
       width: '20ch',
     },

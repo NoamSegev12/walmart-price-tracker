@@ -1,10 +1,10 @@
 export interface Product {
-  productId: number;
+  product_id: number;
   title: string;
-  currentPrice: number;
+  current_price: number;
   rating: number;
-  imageUrl: string;
-  productUrl: string;
+  image_url: string;
+  product_url: string;
   category?: string;
-  priceHistory?: number[];
+  price_history?: number[];
 }
