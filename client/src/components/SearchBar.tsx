@@ -5,51 +5,45 @@ import logo from '../assets/walmartIcon.png';
 import {useState} from 'react';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import type {SearchBarProps} from '../interfaces/SearchBarProps';
+import {useAlert} from '../contexts/AlertContext';
 
 const SearchBar = ({setProducts, setIsSearchDisplay}: SearchBarProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
+  const {showAlert} = useAlert();
 
   const fetchFromServer = async (url: string, method = {method: 'GET'}) => {
     setLoading(true);
-    // setError(null);
 
     try {
-      // Use the proxy configured in vite.config.js
       const response = await fetch(url, method);
 
       if (!response.ok) {
-        // Handle HTTP errors
-        const errorData = await response.json(); // Assuming Flask sends JSON errors
+        const errorData = await response.json();
         console.error('Failed to fetch products:', errorData);
+        showAlert('Failed to load products. Please try again.', 'error');
         return;
       }
 
       const data = await response.json();
       console.log(data);
-      setProducts(data); // Pass the results back to the parent component
+      setProducts(data);
     } catch (err) {
       console.error('Failed to fetch products:', err);
-      // setError(`Failed to search: ${err.message}`);
+      showAlert('Failed to load products. Please try again.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
   const handleMyShoppingCart = async () => {
-    setIsSearchDisplay(false);
     await fetchFromServer('/api/products');
+    setIsSearchDisplay(false);
   };
 
   const handleSearch = async () => {
-    console.log('searching');
-    if (!searchTerm.trim()) {
-      // setError('Please enter a search term.');
-      return;
-    }
-    console.log(searchTerm);
-    setIsSearchDisplay(true);
     await fetchFromServer(`/api/search/${encodeURIComponent(searchTerm)}`, {method: 'POST'});
+    setIsSearchDisplay(true);
   };
 
   return (

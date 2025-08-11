@@ -16,7 +16,6 @@ declare module 'react-rating-stars-component' {
     classNames?: string;
     char?: string;
     a11y?: boolean;
-    // Add other props you use from the library
   }
 
   const ReactStars: React.FC<ReactStarsProps>;

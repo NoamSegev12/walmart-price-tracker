@@ -8,35 +8,44 @@ import {Anchor} from '../styledComponents/Anchor.tsx';
 import {DeleteOutline} from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import type {ProductItemProps} from '../interfaces/ProductItemProps';
+import {useAlert} from '../contexts/AlertContext';
 
 const ProductItem = ({product, setProducts, isSearchDisplay}: ProductItemProps) => {
-  const handleAddToCart = async (product: Product) => {
-      try {
-        const response = await fetch(`/api/products/${encodeURIComponent(product.product_id)}`, {method: 'POST'});
-        if (!response.ok) {
-          const errorData = await response.json(); // Assuming Flask sends JSON errors
-          console.error('Failed to fetch products:', errorData);
-          return;
-        }
-        setProducts((prevProducts: Product[]) => [...prevProducts, product]);
-      } catch (err) {
-        console.error('Failed to delete product:', err);
-      }
-    };
+  const {showAlert} = useAlert();
 
-    const handleDeleteFromCart = async (product_id: string) => {
-      try {
-        const response = await fetch(`/api/products/${encodeURIComponent(product_id)}`, {method: 'DELETE'});
-        if (!response.ok) {
-          const errorData = await response.json(); // Assuming Flask sends JSON errors
-          console.error('Failed to fetch products:', errorData);
-          return;
-        }
-        setProducts((prevProducts: Product[]) => prevProducts.filter((product: Product) => product.product_id !== product_id));
-      } catch (err) {
-        console.error('Failed to delete product:', err);
+  const handleAddToCart = async (product: Product) => {
+    try {
+      const response = await fetch(`/api/products/${encodeURIComponent(product.product_id)}`, {method: 'POST'});
+      if (!response.ok) {
+        const errorData = await response.json(); // Assuming Flask sends JSON errors
+        console.error('Failed to fetch products:', errorData);
+        showAlert('Failed to add product to cart. Please try again.', 'error');
+        return;
       }
-    };
+      setProducts((prevProducts: Product[]) => [...prevProducts, product]);
+      showAlert('Product added to cart.', 'success');
+    } catch (err) {
+      console.error('Failed to delete product:', err);
+      showAlert('Failed to add product to cart. Please try again.', 'error');
+    }
+  };
+
+  const handleDeleteFromCart = async (product_id: string) => {
+    try {
+      const response = await fetch(`/api/products/${encodeURIComponent(product_id)}`, {method: 'DELETE'});
+      if (!response.ok) {
+        const errorData = await response.json(); // Assuming Flask sends JSON errors
+        console.error('Failed to fetch products:', errorData);
+        showAlert('Failed to delete product. Please try again.', 'error');
+        return;
+      }
+      setProducts((prevProducts: Product[]) => prevProducts.filter((product: Product) => product.product_id !== product_id));
+      showAlert('Product deleted from cart.', 'success');
+    } catch (err) {
+      console.error('Failed to delete product:', err);
+      showAlert('Failed to delete product. Please try again.', 'error');
+    }
+  };
 
   return (
     <Paper sx={{padding: 2, height: '100%'}}>
