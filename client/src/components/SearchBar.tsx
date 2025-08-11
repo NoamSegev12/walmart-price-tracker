@@ -5,7 +5,7 @@ import logo from '../assets/walmartIcon.png';
 import {useState} from 'react';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import type {SearchBarProps} from '../interfaces/SearchBarProps';
-import {useAlert} from '../contexts/AlertContext';
+import {useAlert} from '../contexts/UseAlert';
 
 const SearchBar = ({setProducts, setIsSearchDisplay}: SearchBarProps) => {
   const [searchTerm, setSearchTerm] = useState('');

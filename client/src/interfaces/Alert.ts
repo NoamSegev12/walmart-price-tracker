@@ -1,7 +1,6 @@
 export type AlertType = "success" | "error" | "warning" | "info";
 
 export interface AlertData {
-  id: number;
   message: string;
   severity: AlertType;
 }

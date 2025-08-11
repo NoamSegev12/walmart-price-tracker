@@ -3,7 +3,7 @@ import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import {CssBaseline, ThemeProvider} from '@mui/material';
 import {theme} from './theme.tsx';
-import {AlertProvider} from './contexts/AlertContext';
+import {AlertProvider} from './contexts/AlertProvider';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

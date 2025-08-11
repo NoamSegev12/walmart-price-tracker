@@ -8,7 +8,7 @@ import {Anchor} from '../styledComponents/Anchor.tsx';
 import {DeleteOutline} from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import type {ProductItemProps} from '../interfaces/ProductItemProps';
-import {useAlert} from '../contexts/AlertContext';
+import {useAlert} from '../contexts/UseAlert';
 
 const ProductItem = ({product, setProducts, isSearchDisplay}: ProductItemProps) => {
   const {showAlert} = useAlert();
