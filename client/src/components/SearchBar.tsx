@@ -14,6 +14,7 @@ const SearchBar = ({setProducts, setIsSearchDisplay}: SearchBarProps) => {
 
   const fetchFromServer = async (url: string, method = {method: 'GET'}) => {
     setLoading(true);
+    let success;
 
     try {
       const response = await fetch(url, method);
@@ -22,28 +23,33 @@ const SearchBar = ({setProducts, setIsSearchDisplay}: SearchBarProps) => {
         const errorData = await response.json();
         console.error('Failed to fetch products:', errorData);
         showAlert('Failed to load products. Please try again.', 'error');
-        return;
+        return false;
       }
 
       const data = await response.json();
       console.log(data);
       setProducts(data);
+      success = true;
     } catch (err) {
       console.error('Failed to fetch products:', err);
       showAlert('Failed to load products. Please try again.', 'error');
+      success = false;
     } finally {
       setLoading(false);
     }
+    return success;
   };
 
   const handleMyShoppingCart = async () => {
-    await fetchFromServer('/api/products');
-    setIsSearchDisplay(false);
+    const success = await fetchFromServer('/api/products');
+    if (success)
+      setIsSearchDisplay(false);
   };
 
   const handleSearch = async () => {
-    await fetchFromServer(`/api/search/${encodeURIComponent(searchTerm)}`, {method: 'POST'});
-    setIsSearchDisplay(true);
+    const success = await fetchFromServer(`/api/search/${encodeURIComponent(searchTerm)}`, {method: 'POST'});
+    if (success)
+      setIsSearchDisplay(true);
   };
 
   return (

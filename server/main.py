@@ -18,11 +18,11 @@ def scrape_walmart_data(target_url):
     try:
         response = requests.request("GET", url)
         response.raise_for_status()
-        print(response.text)
         data = response.json()
+        app.logger.info(f"Scraped data from {target_url}: {data}")
         return data
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching data from API: {e}")
+        app.logger.error(f"Error fetching data from {target_url}: {e}")
         return None
 
 
@@ -31,7 +31,6 @@ def search_by_name(name):
     target_url = urllib.parse.quote(
         f'https://developer.api.walmart.com/api-proxy/service/affil/product/v2/search?query=tv')
     products = scrape_walmart_data(target_url)
-    print(products)
     return products
 
 
@@ -64,8 +63,9 @@ def get_products():
 @app.route('/api/products/<product_id>')
 def get_product(product_id):
     with Session(engine) as session:
-        product = session.query(Product).where(Product.product_id == product_id).first()
+        product = session.get(Product, product_id)
         if not product:
+            app.logger.warning(f"Product not found: {product_id}")
             return {'error': 'Product not found'}, 404
         return product.to_dict()
 
@@ -74,10 +74,12 @@ def get_product(product_id):
 def update_product(product_id):
     new_data = request.json
     if not new_data:
+        app.logger.warning("Invalid or missing JSON")
         return jsonify({"error": "Invalid or missing JSON"}), 400
     with Session(engine) as session:
         product = session.get(Product, product_id)
         if not product:
+            app.logger.warning(f"Product not found: {product_id}")
             return jsonify({'error': 'Product not found'}), 404
 
         for key, value in new_data.items():
@@ -86,6 +88,7 @@ def update_product(product_id):
 
         product.last_update = datetime.now()
         session.commit()
+        app.logger.info(f"Updated product {product_id}: {new_data}")
         return product.to_dict()
 
 
@@ -94,26 +97,30 @@ def delete_product(product_id):
     with Session(engine) as session:
         product = session.get(Product, product_id)
         if not product:
+            app.logger.warning(f"Product not found: {product_id}")
             return jsonify({'error': 'Product not found'}), 404
         session.delete(product)
         try:
             session.commit()
+            app.logger.info(f"Deleted product {product_id}")
             return jsonify({'success': 'Product deleted'}), 200
         except Exception as e:
-            session.rollback()  # Rollback in case of an error during commit
-            print(f"Error during commit: {e}")
+            session.rollback()
+            app.logger.error(f"Error during commit: {e}")
             return jsonify({'error': 'Failed to delete product from database'}), 500
 
 @app.route('/api/products/<product_id>/', methods=['POST'])
 def add_product():
     new_product = request.json
     if not new_product:
+        app.logger.warning("Invalid or missing JSON")
         return jsonify({"error": "Invalid or missing JSON"}), 400
     with Session(engine) as session:
         product = Product(**new_product)
         session.add(product)
         session.commit()
+        app.logger.info(f"Added product: {new_product}")
         return product.to_dict()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, threaded=True)

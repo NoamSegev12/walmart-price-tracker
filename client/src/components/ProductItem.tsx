@@ -9,9 +9,12 @@ import {DeleteOutline} from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import type {ProductItemProps} from '../interfaces/ProductItemProps';
 import {useAlert} from '../contexts/UseAlert';
+import ProductPage from './ProductPage';
+import {useState} from 'react';
 
 const ProductItem = ({product, setProducts, isSearchDisplay}: ProductItemProps) => {
   const {showAlert} = useAlert();
+  const [openDialog, setOpenDialog] = useState(false);
 
   const handleAddToCart = async (product: Product) => {
     try {
@@ -48,38 +51,47 @@ const ProductItem = ({product, setProducts, isSearchDisplay}: ProductItemProps) 
   };
 
   return (
-    <Paper sx={{padding: 2, height: '100%'}}>
-      <Box sx={{display: 'flex', justifyContent: 'center', width: '100%', height: '150px'}}>
-        <img
-          src={product.image_url}
-          alt={'Product image'}
-          style={{display: 'block', margin: '0 auto', maxWidth: '100%', maxHeight: '150px', height: 'auto'}}
-        />
-      </Box>
-      <Box>
-        <Typography variant="h6">{product.title}</Typography>
-        <Typography>Price: ${product.current_price}</Typography>
-        <Typography>Rating:</Typography>
-        <ReactStars
-          count={5}
-          value={product.rating}
-          size={24}
-          isHalf
-          edit={false}
-          emptyIcon={<StarBorderIcon/>}
-          halfIcon={<StarHalfIcon/>}
-          filledIcon={<StarIcon/>}
-          activeColor="#ffd700"
-        />
-        <Anchor href={product.product_url}>Walmart Link to {product.title}</Anchor>
-        {isSearchDisplay ?
-          <Button endIcon={<AddIcon/>} sx={{marginTop: 2}}
-                  onClick={() => handleAddToCart(product)}>Add</Button> :
-          <Button variant={'outlined'} endIcon={<DeleteOutline/>} sx={{marginTop: 2}}
-                  onClick={() => handleDeleteFromCart(product.product_id)}>Delete</Button>
-        }
-      </Box>
-    </Paper>
+    <>
+      <Paper sx={{padding: 2, height: '100%'}} onClick={() => setOpenDialog(true)}>
+        <Box sx={{display: 'flex', justifyContent: 'center', width: '100%', height: '150px'}}>
+          <img
+            src={product.image_url}
+            alt={'Product image'}
+            style={{display: 'block', margin: '0 auto', maxWidth: '100%', maxHeight: '150px', height: 'auto'}}
+          />
+        </Box>
+        <div>
+          <Typography variant="h6">{product.title}</Typography>
+          <Typography>Price: ${product.current_price}</Typography>
+          <Box sx={{display: 'flex', alignItems: 'center', gap: 0.5}}>
+            <Typography>Rating:</Typography>
+            <Box sx={{display: 'flex', alignItems: 'center', paddingTop: 1}}>
+              <ReactStars
+                count={5}
+                value={product.rating}
+                size={16}
+                isHalf
+                edit={false}
+                emptyIcon={<StarBorderIcon fontSize="small"/>}
+                halfIcon={<StarHalfIcon fontSize="small"/>}
+                filledIcon={<StarIcon fontSize="small"/>}
+                activeColor="#ffd700"
+              />
+            </Box>
+          </Box>
+          <Anchor href={product.product_url} target={'_blank'}>Walmart Link to {product.title}</Anchor>
+          {isSearchDisplay ?
+            <Button endIcon={<AddIcon/>} sx={{marginTop: 2}}
+                    onClick={() => handleAddToCart(product)}>Add</Button> :
+            <Button variant={'outlined'} endIcon={<DeleteOutline/>} sx={{marginTop: 2}}
+                    onClick={() => handleDeleteFromCart(product.product_id)}>Delete</Button>
+          }
+        </div>
+      </Paper>
+      <ProductPage product={product} openDialog={openDialog} setOpenDialog={setOpenDialog}
+                   handleAddToCart={handleAddToCart}
+                   handleDeleteFromCart={handleDeleteFromCart} isSearchDisplay={isSearchDisplay}/>
+    </>
   );
 };
 

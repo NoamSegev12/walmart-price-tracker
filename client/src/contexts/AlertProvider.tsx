@@ -27,7 +27,7 @@ export const AlertProvider = ({children}: { children: ReactNode }) => {
       {alert && (
         <Snackbar
           open={open}
-          autoHideDuration={3000}
+          autoHideDuration={5000}
           onClose={handleClose}
           slots={{transition: GrowTransition}}
           anchorOrigin={{vertical: 'bottom', horizontal: 'left'}}
