@@ -16,7 +16,7 @@ export const Search = styled('div')(({ theme }) => ({
   },
 }));
 
-export const SearchIconWrapper = styled('div')(({ theme }) => ({
+export const SearchIconWrapper = styled('button')(({ theme }) => ({
   padding: theme.spacing(0, 1, 0, 0),
   height: '100%',
   position: 'absolute',
@@ -26,7 +26,12 @@ export const SearchIconWrapper = styled('div')(({ theme }) => ({
   justifyContent: 'center',
   right: 0,
   top: 0,
-  cursor: 'pointer'
+  backgroundColor: 'transparent',
+  border: 'none',
+  color: theme.palette.text.primary,
+  '&:not(:disabled)': {
+    cursor: 'pointer'
+  }
 }));
 
 export const StyledSearchField = styled(TextField)(({ theme }) => ({

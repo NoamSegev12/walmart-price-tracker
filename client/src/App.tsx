@@ -1,8 +1,8 @@
-import SearchBar from './searchBar/SearchBar.tsx';
+import SearchBar from './components/SearchBar.tsx';
 import {useState} from 'react';
-import ProductsPanel from './productsPannel/ProductsPanel.tsx';
+import ProductsPanel from './components/ProductsPanel.tsx';
 import './index.css'
-import type {Product} from './interfaces/product';
+import type {Product} from './interfaces/Product';
 
 const App = () => {
   const [products, setProducts] = useState<Product[]>([]);

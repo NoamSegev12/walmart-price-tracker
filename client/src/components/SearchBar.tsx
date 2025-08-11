@@ -4,8 +4,9 @@ import SearchIcon from '@mui/icons-material/Search';
 import logo from '../assets/walmartIcon.png';
 import {useState} from 'react';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import type {SearchBarProps} from '../interfaces/SearchBarProps';
 
-const SearchBar = ({setProducts, setIsSearchDisplay}: any) => {
+const SearchBar = ({setProducts, setIsSearchDisplay}: SearchBarProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -63,7 +64,7 @@ const SearchBar = ({setProducts, setIsSearchDisplay}: any) => {
                 disabled={loading}
                 onChange={e => setSearchTerm(e.target.value)}
               />
-              <SearchIconWrapper onClick={handleSearch}>
+              <SearchIconWrapper onClick={handleSearch} disabled={!searchTerm || loading}>
                 <SearchIcon/>
               </SearchIconWrapper>
             </Search>

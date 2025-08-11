@@ -5,8 +5,3 @@ html, body {
     height: 100%;
     box-sizing: border-box; /* Optional, but recommended */
 }
-
-img {
-    max-width: 80%;
-    height: auto;
-}
