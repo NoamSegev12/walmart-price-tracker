@@ -61,7 +61,13 @@ const ProductItem = ({product, setProducts, isSearchDisplay}: ProductItemProps) 
           />
         </Box>
         <div>
-          <Typography variant="h6">{product.title}</Typography>
+          {isSearchDisplay ?
+            <Button endIcon={<AddIcon/>} sx={{marginTop: 2}}
+                    onClick={() => handleAddToCart(product)}>Add</Button> :
+            <Button variant={'outlined'} endIcon={<DeleteOutline/>} sx={{marginTop: 2}}
+                    onClick={() => handleDeleteFromCart(product.product_id)}>Delete</Button>
+          }
+          <Typography fontWeight={'bold'}>{product.title}</Typography>
           <Typography>Price: ${product.current_price}</Typography>
           <Box sx={{display: 'flex', alignItems: 'center', gap: 0.5}}>
             <Typography>Rating:</Typography>
@@ -80,12 +86,6 @@ const ProductItem = ({product, setProducts, isSearchDisplay}: ProductItemProps) 
             </Box>
           </Box>
           <Anchor href={product.product_url} target={'_blank'}>Walmart Link to {product.title}</Anchor>
-          {isSearchDisplay ?
-            <Button endIcon={<AddIcon/>} sx={{marginTop: 2}}
-                    onClick={() => handleAddToCart(product)}>Add</Button> :
-            <Button variant={'outlined'} endIcon={<DeleteOutline/>} sx={{marginTop: 2}}
-                    onClick={() => handleDeleteFromCart(product.product_id)}>Delete</Button>
-          }
         </div>
       </Paper>
       <ProductPage product={product} openDialog={openDialog} setOpenDialog={setOpenDialog}

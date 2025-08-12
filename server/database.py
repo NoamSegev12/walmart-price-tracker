@@ -11,12 +11,12 @@ class Base(DeclarativeBase):
 class Product(Base):
     __tablename__ = "Products"
 
-    product_id: Mapped[str] = mapped_column(primary_key=True)
+    product_id: Mapped[str] = mapped_column(String(255), primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    current_price: Mapped[float] = mapped_column(nullable=False)
+    current_price: Mapped[str] = mapped_column(String(255), nullable=False)
     rating: Mapped[float] = mapped_column(nullable=False)
-    image_url: Mapped[str] = mapped_column(String(255), nullable=False)
-    product_url: Mapped[str] = mapped_column(String(255), nullable=False)
+    image_url: Mapped[str] = mapped_column(String(1024), nullable=False)
+    product_url: Mapped[str] = mapped_column(String(1024), nullable=False)
     category: Mapped[Optional[str]] = mapped_column(String(255))
     created_at = Column(DateTime(timezone=True))
     last_update = Column(DateTime(timezone=True))

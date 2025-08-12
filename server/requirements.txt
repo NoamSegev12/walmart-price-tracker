@@ -2,3 +2,4 @@ sqlalchemy
 flask
 psycopg2
 sqlalchemy-cockroachdb
+bs4

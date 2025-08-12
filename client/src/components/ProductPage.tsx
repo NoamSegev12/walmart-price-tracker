@@ -16,16 +16,20 @@ const ProductPage = ({
                        handleDeleteFromCart,
                        isSearchDisplay
                      }: ProductPageProps) => {
+  const handleDeleteFromDialog = async (product_id: string) => {
+    await handleDeleteFromCart(product_id);
+    setOpenDialog(false);
+  }
   return (
     <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth>
       <DialogContent sx={{display: 'flex', justifyContent: 'space-around'}}>
         <img
           src={product.image_url}
           alt={'Product image'}
-          style={{maxWidth: '100%', height: 'auto'}}
+          style={{maxWidth: '100%', maxHeight: '200px'}}
         />
         <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
-          <Typography variant="h5">{product.title}</Typography>
+          <Typography fontWeight={'bold'}>{product.title}</Typography>
           <Typography>Price: ${product.current_price}</Typography>
           <Box sx={{display: 'flex', alignItems: 'center', gap: 0.5}}>
             <Typography>Rating:</Typography>
@@ -53,7 +57,7 @@ const ProductPage = ({
           isSearchDisplay ? <Button endIcon={<AddIcon/>} sx={{marginTop: 2}}
                                     onClick={() => handleAddToCart(product)}>Add</Button> :
             <Button variant={'outlined'} endIcon={<DeleteOutline/>} sx={{marginTop: 2}}
-                    onClick={() => handleDeleteFromCart(product.product_id)}>Delete
+                    onClick={() => handleDeleteFromDialog(product.product_id)}>Delete
             </Button>
         }
       </DialogActions>
