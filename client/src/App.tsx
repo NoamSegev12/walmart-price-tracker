@@ -7,11 +7,12 @@ import type {Product} from './interfaces/Product';
 const App = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isSearchDisplay, setIsSearchDisplay] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   return (
     <div className="App">
-      <SearchBar setProducts={setProducts} setIsSearchDisplay={setIsSearchDisplay}/>
-      <ProductsPanel products={products} setProducts={setProducts} isSearchDisplay={isSearchDisplay}/>
+      <SearchBar setProducts={setProducts} setIsSearchDisplay={setIsSearchDisplay} loading={loading} setLoading={setLoading}/>
+      <ProductsPanel products={products} setProducts={setProducts} isSearchDisplay={isSearchDisplay} loading={loading}/>
     </div>
   )
 }

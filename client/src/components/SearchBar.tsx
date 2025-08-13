@@ -7,9 +7,8 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import type {SearchBarProps} from '../interfaces/SearchBarProps';
 import {useAlert} from '../contexts/UseAlert';
 
-const SearchBar = ({setProducts, setIsSearchDisplay}: SearchBarProps) => {
+const SearchBar = ({setProducts, setIsSearchDisplay, loading, setLoading}: SearchBarProps) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(false);
   const {showAlert} = useAlert();
 
   const fetchFromServer = async (url: string, method = {method: 'GET'}) => {
