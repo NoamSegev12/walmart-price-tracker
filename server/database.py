@@ -34,8 +34,8 @@ class Product(Base):
             "last_update": self.last_update.isoformat() if self.last_update else None,
         }
 
-class ShoppingCart(Base):
-    __tablename__ = "ShoppingCart"
+class ShoppingCartItem(Base):
+    __tablename__ = "ShoppingCartItem"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, nullable=False)
 

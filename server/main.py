@@ -6,14 +6,14 @@ import urllib.parse
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.dialects.postgresql import insert
-from database import Product, ShoppingCart
+from database import Product, ShoppingCartItem, Base
 from bs4 import BeautifulSoup
 import json
 
 app = Flask(__name__, static_url_path='/assets', static_folder='static/assets')
 token = os.environ['SCRAPEDO_API_TOKEN']
 engine = create_engine(os.environ['DB_URL'])
-
+Base.metadata.create_all(engine)
 
 def safe_str(val):
     if isinstance(val, (dict, list)):
@@ -138,7 +138,7 @@ def get_products():
 @app.route('/api/cart')
 def get_products_from_cart():
     with Session(engine) as session:
-        cart_items = session.query(ShoppingCart).all()
+        cart_items = session.query(ShoppingCartItem).all()
 
         products_in_cart = [
             item.product.to_dict()
@@ -207,12 +207,12 @@ def add_product_to_cart(product_id: str):
             app.logger.warning(f"Product not found: {product_id}")
             return jsonify({'error': 'Product not found'}), 404
 
-        existing_item = session.query(ShoppingCart).filter_by(product_id=product_id).first()
+        existing_item = session.query(ShoppingCartItem).filter_by(product_id=product_id).first()
         if existing_item:
             app.logger.info(f"Product {product_id} is already in the cart")
             return jsonify({'message': 'Product already in the cart'}), 400
 
-        cart_item = ShoppingCart(product_id=product_id)
+        cart_item = ShoppingCartItem(product_id=product_id)
         session.add(cart_item)
         session.commit()
         app.logger.info(f"Added product {product_id} to cart")
@@ -222,7 +222,7 @@ def add_product_to_cart(product_id: str):
 @app.route('/api/cart/<product_id>', methods=['DELETE'])
 def delete_product_from_cart(product_id: str):
     with Session(engine) as session:
-        cart_items = session.query(ShoppingCart).filter_by(product_id=product_id).all()
+        cart_items = session.query(ShoppingCartItem).filter_by(product_id=product_id).all()
 
         if not cart_items:
             app.logger.warning(f"Cart item not found: {product_id}")
