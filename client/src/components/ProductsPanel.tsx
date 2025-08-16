@@ -16,7 +16,7 @@ const ProductsPanel = ({products, setProducts, isSearchDisplay, loading, openFil
         }}>
           <CircularProgress size={100}/>
         </Box> :
-        <Grid container spacing={{xs: 2, md: 3}} columns={{xs: 4, sm: 8, md: 12}} margin={2} paddingBottom={5}>
+        <Grid container spacing={{xs: 2, md: 3}} columns={{xs: 4, sm: 8, md: 12}}>
           {products.map((product: Product, index: number) => (
             <Grid key={index} size={{xs: 2, sm: 4, md: 3}}>
               <ProductItem product={product} setProducts={setProducts} isSearchDisplay={isSearchDisplay}/>

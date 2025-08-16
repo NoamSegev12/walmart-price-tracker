@@ -207,6 +207,11 @@ def add_product_to_cart(product_id: str):
             app.logger.warning(f"Product not found: {product_id}")
             return jsonify({'error': 'Product not found'}), 404
 
+        existing_item = session.query(ShoppingCart).filter_by(product_id=product_id).first()
+        if existing_item:
+            app.logger.info(f"Product {product_id} is already in the cart")
+            return jsonify({'message': 'Product already in the cart'}), 400
+
         cart_item = ShoppingCart(product_id=product_id)
         session.add(cart_item)
         session.commit()

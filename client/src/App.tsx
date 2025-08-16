@@ -11,7 +11,7 @@ const App = () => {
   const [isSearchDisplay, setIsSearchDisplay] = useState(true);
   const [loading, setLoading] = useState(false);
   const [openFilterBar, setOpenFilterBar] = useState(false);
-  const [filters, setFilters] = useState<{priceRange: number[], ratingRange: number[]}>({
+  const [filters, setFilters] = useState<{ priceRange: number[], ratingRange: number[] }>({
     priceRange: [0, 50],
     ratingRange: [0, 5]
   });
@@ -33,7 +33,7 @@ const App = () => {
       <SearchBar setProducts={setProducts} setIsSearchDisplay={setIsSearchDisplay} loading={loading}
                  setLoading={setLoading} openFilterBar={openFilterBar} setOpenFilterBar={setOpenFilterBar}/>
       <FilterBar openFilterBar={openFilterBar} onApplyFilters={setFilters}/>
-      {filteredProducts.length === 0 && !loading ? (
+      {filteredProducts.length === 0 && !loading ?
         <Box sx={{
           display: 'flex',
           flexDirection: 'column',
@@ -45,7 +45,7 @@ const App = () => {
           <Typography variant={'h2'}>Welcome to Walmart Price Tracker!</Typography>
           <Typography variant={'h5'}>Search for products to get started</Typography>
         </Box>
-      ) : (
+        :
         <ProductsPanel
           products={filteredProducts}
           setProducts={setProducts}
@@ -53,7 +53,7 @@ const App = () => {
           loading={loading}
           openFilterBar={openFilterBar}
         />
-      )}
+      }
     </div>
   );
 };

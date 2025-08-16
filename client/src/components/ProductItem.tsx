@@ -28,7 +28,7 @@ const ProductItem = ({product, setProducts, isSearchDisplay}: ProductItemProps) 
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Failed to fetch products:', errorData);
-        showAlert('Failed to add product to cart. Please try again.', 'error');
+        showAlert(errorData.message, 'error');
         return;
       }
       showAlert('Product added to cart.', 'success');
