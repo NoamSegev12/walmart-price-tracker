@@ -9,25 +9,16 @@ export const theme = createTheme({
     secondary: {
       main: '#007c77'
     },
-    // error: {
-    //   main: '#ff0000'
-    // },
-    // success: {
-    //   main: '#00ff00'
-    // },
     text: {
       primary: '#E0E2DB'
     },
-    // warning: {
-    //   main: '#ffff00'
-    // },
     background: {
       default: '#282633',
       paper: '#413F54'
     }
   },
   shape: {
-    borderRadius: 5,
+    borderRadius: 5
   },
   typography: {
     fontFamily: '"Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;'
@@ -38,6 +29,18 @@ export const theme = createTheme({
         variant: 'contained',
         size: 'small'
       }
+    },
+    MuiSlider: {
+      defaultProps: {
+        color: 'secondary',
+        disableSwap: true,
+        valueLabelDisplay: 'auto',
+        sx: {
+          '& .MuiSlider-markLabel': {
+            color: '#E0E2DB'
+          }
+        }
+      }
     }
   }
-})
+});

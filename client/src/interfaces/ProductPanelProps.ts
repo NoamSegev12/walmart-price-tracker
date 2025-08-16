@@ -6,4 +6,5 @@ export interface ProductPanelProps {
   setProducts: Dispatch<SetStateAction<Product[]>>;
   isSearchDisplay: boolean;
   loading: boolean;
+  openFilterBar: boolean;
 }

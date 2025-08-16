@@ -11,7 +11,7 @@ export const Search = styled('div')(({ theme }) => ({
   marginLeft: 0,
   width: '100%',
   [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
+    marginLeft: theme.spacing(1),
     width: 'auto',
   },
 }));
@@ -50,3 +50,16 @@ export const StyledSearchField = styled(TextField)(({ theme }) => ({
     border: 'none'
   }
 }));
+
+export const FilterIconWrapper = styled('button')(({ theme }) => ({
+  padding: theme.spacing(0, 1, 0, 0),
+  border: 'none',
+  color: theme.palette.text.primary,
+  '&:not(:disabled)': {
+    cursor: 'pointer'
+  },
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'transparent',
+}))

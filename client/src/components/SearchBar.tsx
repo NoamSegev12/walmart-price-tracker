@@ -1,14 +1,15 @@
 import {AppBar, Toolbar, Box, Tooltip} from '@mui/material';
-import {Search, SearchIconWrapper, StyledSearchField} from '../styledComponents/Search.tsx';
+import {FilterIconWrapper, Search, SearchIconWrapper, StyledSearchField} from '../styledComponents/Search.tsx';
 import SearchIcon from '@mui/icons-material/Search';
 import logo from '../assets/walmartIcon.png';
 import {useState} from 'react';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import TurnedInNotIcon from '@mui/icons-material/TurnedInNot';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import type {SearchBarProps} from '../interfaces/SearchBarProps';
 import {useAlert} from '../contexts/UseAlert';
 
-const SearchBar = ({setProducts, setIsSearchDisplay, loading, setLoading}: SearchBarProps) => {
+const SearchBar = ({setProducts, setIsSearchDisplay, loading, setLoading, openFilterBar, setOpenFilterBar}: SearchBarProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const {showAlert} = useAlert();
 
@@ -40,13 +41,13 @@ const SearchBar = ({setProducts, setIsSearchDisplay, loading, setLoading}: Searc
   };
 
   const handleSearchedItems = async () => {
-    const success = await fetchFromServer('/api/cart');
+    const success = await fetchFromServer('/api/products');
     if (success)
       setIsSearchDisplay(true);
   };
 
   const handleMyShoppingCart = async () => {
-    const success = await fetchFromServer('/api/products');
+    const success = await fetchFromServer('/api/cart');
     if (success)
       setIsSearchDisplay(false);
   };
@@ -59,12 +60,15 @@ const SearchBar = ({setProducts, setIsSearchDisplay, loading, setLoading}: Searc
 
   return (
     <>
-      <AppBar>
+      <AppBar sx={{zIndex: (theme) => theme.zIndex.drawer + 1}}>
         <Toolbar sx={{display: 'flex', justifyContent: 'space-between'}}>
           <a href={'https://www.walmart.com'} target={'_blank'} rel={'noreferrer'}>
             <img src={logo} alt={'Walmart logo'} width={40} height={40}/>
           </a>
           <Box sx={{display: 'flex', alignItems: 'center'}}>
+            <FilterIconWrapper onClick={() => setOpenFilterBar(!openFilterBar)} disabled={loading}>
+              <FilterListIcon/>
+            </FilterIconWrapper>
             <Search>
               <StyledSearchField
                 placeholder={'Search...'}

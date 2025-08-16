@@ -6,4 +6,6 @@ export interface SearchBarProps {
   setIsSearchDisplay: Dispatch<SetStateAction<boolean>>;
   loading: boolean;
   setLoading: Dispatch<SetStateAction<boolean>>;
+  openFilterBar: boolean;
+  setOpenFilterBar: Dispatch<SetStateAction<boolean>>;
 }
