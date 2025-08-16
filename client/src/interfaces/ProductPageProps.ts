@@ -6,6 +6,6 @@ export interface ProductPageProps {
   openDialog: boolean;
   setOpenDialog: Dispatch<SetStateAction<boolean>>;
   handleAddToCart: (product: Product) => Promise<void>;
-  handleDeleteFromCart: (product_id: string) => Promise<void>;
+  handleDeleteFromCart: (product_id: string, table: string) => Promise<void>;
   isSearchDisplay: boolean;
 }

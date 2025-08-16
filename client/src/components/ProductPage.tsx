@@ -17,7 +17,7 @@ const ProductPage = ({
                        isSearchDisplay
                      }: ProductPageProps) => {
   const handleDeleteFromDialog = async (product_id: string) => {
-    await handleDeleteFromCart(product_id);
+    await handleDeleteFromCart(product_id, 'cart');
     setOpenDialog(false);
   }
   return (
@@ -28,7 +28,7 @@ const ProductPage = ({
           alt={'Product image'}
           style={{maxWidth: '100%', maxHeight: '200px'}}
         />
-        <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+        <Box sx={{margin: 2}}>
           <Typography fontWeight={'bold'}>{product.title}</Typography>
           <Typography>Price: ${product.current_price}</Typography>
           <Box sx={{display: 'flex', alignItems: 'center', gap: 0.5}}>
@@ -49,7 +49,7 @@ const ProductPage = ({
           </Box>
           <Anchor href={product.product_url} target={'_blank'}>Walmart Link to {product.title}</Anchor>
           <Typography>About this item:</Typography>
-        </div>
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button variant={'text'} sx={{marginTop: 2}} onClick={() => setOpenDialog(false)}>Close</Button>

@@ -1,12 +1,12 @@
 from datetime import datetime
-
 from flask import Flask, request, jsonify
 import os
 import requests
 import urllib.parse
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from server.database import Product
+from sqlalchemy.dialects.postgresql import insert
+from server.database import Product, ShoppingCart
 from bs4 import BeautifulSoup
 import json
 
@@ -15,22 +15,47 @@ token = os.environ['SCRAPEDO_API_TOKEN']
 engine = create_engine(os.environ['DB_URL'].replace("postgresql://", "cockroachdb://"), echo=True)
 
 
+def safe_str(val):
+    if isinstance(val, (dict, list)):
+        return json.dumps(val, ensure_ascii=False)
+    return str(val) if val is not None else ""
+
+
 def parse_walmart_item(item: dict) -> dict:
     return {
-        "product_id": str(item.get("productId") or item.get("usItemId") or item.get("id") or ""),
-        "title": item.get("title")
-        or item.get("name")
-        or (item.get("product", {}) or {}).get("title")
-        or (item.get("product", {}) or {}).get("name")
-        or "",
-           "current_price": (
-            item.get("price", {}).get("priceDisplay") if isinstance(item.get("price"), dict) else item.get(
-                "price")),
+        "product_id": safe_str(
+            item.get("productId")
+            or item.get("usItemId")
+            or item.get("id")
+        ),
+        "title": safe_str(
+            item.get("title")
+            or item.get("name")
+            or (item.get("product", {}) or {}).get("title")
+            or (item.get("product", {}) or {}).get("name")
+        ),
+        "current_price": (
+            item.get("price", {}).get("priceDisplay")
+            if isinstance(item.get("price"), dict)
+            else item.get("price")
+        ),
         "rating": item.get("averageRating") or item.get("rating"),
-        "image_url": (
-            item.get("image", {}).get("url") if isinstance(item.get("image"), dict) else item.get("image")),
-        "product_url": f"https://www.walmart.com/ip/{item.get('usItemId') or item.get('productId')}" if (
-                item.get("usItemId") or item.get("productId")) else None
+        "image_url": safe_str(
+            item.get("image", {}).get("url")
+            if isinstance(item.get("image"), dict)
+            else item.get("image")
+        ),
+        "product_url": safe_str(
+            f"https://www.walmart.com/ip/{item.get('usItemId') or item.get('productId')}"
+            if (item.get("usItemId") or item.get("productId"))
+            else None
+        ),
+        "category": safe_str(
+            (item.get("category") or {}).get("name")
+            if isinstance(item.get("category"), dict)
+            else item.get("categoryPath")
+                 or (item.get("product", {}) or {}).get("category")
+        )
     }
 
 
@@ -73,20 +98,39 @@ def search_by_name(name):
     target_url = urllib.parse.quote(f'https://www.walmart.com/search?q={name}')
     html = scrape_walmart_data(target_url)
     products = parse_walmart_search(html)
+
+    now = datetime.now()
+    product_rows = list({
+                            p["product_id"]: {
+                                "product_id": p["product_id"],
+                                "title": p["title"],
+                                "current_price": str(p["current_price"]),
+                                "rating": p["rating"],
+                                "image_url": p["image_url"],
+                                "product_url": p["product_url"],
+                                "created_at": now,
+                                "last_update": now
+                            }
+                            for p in products
+                        }.values())
+
+    stmt = insert(Product).values(product_rows)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=['product_id'],
+        set_={
+            "title": stmt.excluded.title,
+            "current_price": stmt.excluded.current_price,
+            "rating": stmt.excluded.rating,
+            "image_url": stmt.excluded.image_url,
+            "product_url": stmt.excluded.product_url,
+            "last_update": stmt.excluded.last_update
+        }
+    )
+
     with Session(engine) as session:
-        for p in products:
-            product = Product(
-                product_id=p["product_id"],
-                title=p["title"],
-                current_price=p["current_price"],
-                rating=p["rating"],
-                image_url=p["image_url"],
-                product_url=p["product_url"],
-                last_update=datetime.now(),
-                created_at=datetime.now()
-            )
-            session.merge(product)
+        session.execute(stmt)
         session.commit()
+
     return jsonify(products)
 
 
@@ -111,6 +155,13 @@ def search_by_name(name):
 
 @app.route('/api/products')
 def get_products():
+    with Session(engine) as session:
+        products = session.query(ShoppingCart).all()
+        return [p.to_dict() for p in products]
+
+
+@app.route('/api/cart')
+def get_products_from_cart():
     with Session(engine) as session:
         products = session.query(Product).all()
         return [p.to_dict() for p in products]
@@ -148,10 +199,9 @@ def update_product(product_id):
         return product.to_dict()
 
 
-@app.route('/api/products/<product_id>', methods=['DELETE'])
-def delete_product(product_id):
+def delete(table, product_id):
     with Session(engine) as session:
-        product = session.get(Product, product_id)
+        product = session.get(table, product_id)
         if not product:
             app.logger.warning(f"Product not found: {product_id}")
             return jsonify({'error': 'Product not found'}), 404
@@ -166,18 +216,28 @@ def delete_product(product_id):
             return jsonify({'error': 'Failed to delete product from database'}), 500
 
 
-@app.route('/api/products/<product_id>/', methods=['POST'])
-def add_product():
+@app.route('/api/products/<product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    return delete(Product, product_id)
+
+
+@app.route('/api/cart/<product_id>', methods=['POST'])
+def add_product_to_cart(product_id: str):
     new_product = request.json
     if not new_product:
         app.logger.warning("Invalid or missing JSON")
         return jsonify({"error": "Invalid or missing JSON"}), 400
     with Session(engine) as session:
-        product = Product(**new_product)
+        product = ShoppingCart(**new_product)
         session.add(product)
         session.commit()
         app.logger.info(f"Added product: {new_product}")
         return product.to_dict()
+
+
+@app.route('/api/cart/<product_id>', methods=['DELETE'])
+def delete_product_from_cart(product_id: str):
+    return delete(ShoppingCart, product_id)
 
 
 if __name__ == '__main__':

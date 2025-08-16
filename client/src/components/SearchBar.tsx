@@ -1,9 +1,10 @@
-import {AppBar, Toolbar, Box} from '@mui/material';
+import {AppBar, Toolbar, Box, Tooltip} from '@mui/material';
 import {Search, SearchIconWrapper, StyledSearchField} from '../styledComponents/Search.tsx';
 import SearchIcon from '@mui/icons-material/Search';
 import logo from '../assets/walmartIcon.png';
 import {useState} from 'react';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import TurnedInNotIcon from '@mui/icons-material/TurnedInNot';
 import type {SearchBarProps} from '../interfaces/SearchBarProps';
 import {useAlert} from '../contexts/UseAlert';
 
@@ -26,7 +27,6 @@ const SearchBar = ({setProducts, setIsSearchDisplay, loading, setLoading}: Searc
       }
 
       const data = await response.json();
-      console.log(data);
       setProducts(data);
       success = true;
     } catch (err) {
@@ -37,6 +37,12 @@ const SearchBar = ({setProducts, setIsSearchDisplay, loading, setLoading}: Searc
       setLoading(false);
     }
     return success;
+  };
+
+  const handleSearchedItems = async () => {
+    const success = await fetchFromServer('/api/cart');
+    if (success)
+      setIsSearchDisplay(true);
   };
 
   const handleMyShoppingCart = async () => {
@@ -55,7 +61,9 @@ const SearchBar = ({setProducts, setIsSearchDisplay, loading, setLoading}: Searc
     <>
       <AppBar>
         <Toolbar sx={{display: 'flex', justifyContent: 'space-between'}}>
-          <img src={logo} alt={'Walmart logo'} width={40} height={40}/>
+          <a href={'https://www.walmart.com'} target={'_blank'} rel={'noreferrer'}>
+            <img src={logo} alt={'Walmart logo'} width={40} height={40}/>
+          </a>
           <Box sx={{display: 'flex', alignItems: 'center'}}>
             <Search>
               <StyledSearchField
@@ -68,7 +76,14 @@ const SearchBar = ({setProducts, setIsSearchDisplay, loading, setLoading}: Searc
               </SearchIconWrapper>
             </Search>
           </Box>
-          <ShoppingCartIcon sx={{marginLeft: 2, cursor: 'pointer'}} onClick={handleMyShoppingCart}/>
+          <div>
+            <Tooltip title={'Followed Items'}>
+              <TurnedInNotIcon sx={{marginLeft: 2, cursor: 'pointer'}} onClick={handleSearchedItems}/>
+            </Tooltip>
+            <Tooltip title={'My Shopping Cart'}>
+              <ShoppingCartIcon sx={{marginLeft: 2, cursor: 'pointer'}} onClick={handleMyShoppingCart}/>
+            </Tooltip>
+          </div>
         </Toolbar>
       </AppBar>
       <Toolbar/>
