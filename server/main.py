@@ -1,18 +1,18 @@
 from datetime import datetime
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import os
 import requests
 import urllib.parse
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.dialects.postgresql import insert
-from server.database import Product, ShoppingCart
+from database import Product, ShoppingCart
 from bs4 import BeautifulSoup
 import json
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/assets', static_folder='static/assets')
 token = os.environ['SCRAPEDO_API_TOKEN']
-engine = create_engine(os.environ['DB_URL'].replace("postgresql://", "cockroachdb://"), echo=True)
+engine = create_engine(os.environ['DB_URL'])
 
 
 def safe_str(val):
@@ -49,12 +49,6 @@ def parse_walmart_item(item: dict) -> dict:
             f"https://www.walmart.com/ip/{item.get('usItemId') or item.get('productId')}"
             if (item.get("usItemId") or item.get("productId"))
             else None
-        ),
-        "category": safe_str(
-            (item.get("category") or {}).get("name")
-            if isinstance(item.get("category"), dict)
-            else item.get("categoryPath")
-                 or (item.get("product", {}) or {}).get("category")
         )
     }
 
@@ -86,16 +80,16 @@ def scrape_walmart_data(target_url):
     try:
         response = requests.get(url)
         response.raise_for_status()
-        app.logger.info(f"Scraped data from {target_url}: {response.text}")
+        app.logger.info(f"Scraped {target_url} | status={response.status_code} | len={len(response.text)}")
         return response.text
     except requests.exceptions.RequestException as e:
         app.logger.error(f"Error fetching data from {target_url}: {e}")
         return None
 
 
-@app.route('/api/search/<name>', methods=['POST'])
-def search_by_name(name):
-    target_url = urllib.parse.quote(f'https://www.walmart.com/search?q={name}')
+@app.route('/api/search/<query>', methods=['POST'])
+def search(query):
+    target_url = urllib.parse.quote(f'https://www.walmart.com/search?q={query}')
     html = scrape_walmart_data(target_url)
     products = parse_walmart_search(html)
 
@@ -134,37 +128,25 @@ def search_by_name(name):
     return jsonify(products)
 
 
-# @app.route('/api/search/<int:product_id>', methods=['POST'])
-# def search_by_id(product_id):
-#     target_url = urllib.parse.quote(f'https://www.walmart.com/ip/{product_id}')
-#     product_data = scrape_walmart_data(target_url)
-#
-#     with Session(engine) as session:
-#         product_title = product_data['title']
-#         current_price = product_data['price']
-#         rating = product_data['rating']
-#         image_url = product_data['image']
-#         product_url = product_data['product_page_url']
-#         created_at = datetime.now()
-#         last_update = datetime.now()
-#         product = Product(title=product_title, current_price=current_price, rating=rating, image_url=image_url,
-#                           product_url=product_url, created_at=created_at, last_update=last_update)
-#         session.add(product)
-#         session.commit()
-
-
 @app.route('/api/products')
 def get_products():
     with Session(engine) as session:
-        products = session.query(ShoppingCart).all()
+        products = session.query(Product).all()
         return [p.to_dict() for p in products]
 
 
 @app.route('/api/cart')
 def get_products_from_cart():
     with Session(engine) as session:
-        products = session.query(Product).all()
-        return [p.to_dict() for p in products]
+        cart_items = session.query(ShoppingCart).all()
+
+        products_in_cart = [
+            item.product.to_dict()
+            for item in cart_items
+            if item.product is not None
+        ]
+
+        return jsonify(products_in_cart)
 
 
 @app.route('/api/products/<product_id>')
@@ -199,9 +181,10 @@ def update_product(product_id):
         return product.to_dict()
 
 
-def delete(table, product_id):
+@app.route('/api/products/<product_id>', methods=['DELETE'])
+def delete_product(product_id):
     with Session(engine) as session:
-        product = session.get(table, product_id)
+        product = session.get(Product, product_id)
         if not product:
             app.logger.warning(f"Product not found: {product_id}")
             return jsonify({'error': 'Product not found'}), 404
@@ -216,29 +199,47 @@ def delete(table, product_id):
             return jsonify({'error': 'Failed to delete product from database'}), 500
 
 
-@app.route('/api/products/<product_id>', methods=['DELETE'])
-def delete_product(product_id):
-    return delete(Product, product_id)
-
-
 @app.route('/api/cart/<product_id>', methods=['POST'])
 def add_product_to_cart(product_id: str):
-    new_product = request.json
-    if not new_product:
-        app.logger.warning("Invalid or missing JSON")
-        return jsonify({"error": "Invalid or missing JSON"}), 400
     with Session(engine) as session:
-        product = ShoppingCart(**new_product)
-        session.add(product)
+        product = session.get(Product, product_id)
+        if not product:
+            app.logger.warning(f"Product not found: {product_id}")
+            return jsonify({'error': 'Product not found'}), 404
+
+        cart_item = ShoppingCart(product_id=product_id)
+        session.add(cart_item)
         session.commit()
-        app.logger.info(f"Added product: {new_product}")
+        app.logger.info(f"Added product {product_id} to cart")
         return product.to_dict()
 
 
 @app.route('/api/cart/<product_id>', methods=['DELETE'])
 def delete_product_from_cart(product_id: str):
-    return delete(ShoppingCart, product_id)
+    with Session(engine) as session:
+        cart_items = session.query(ShoppingCart).filter_by(product_id=product_id).all()
+
+        if not cart_items:
+            app.logger.warning(f"Cart item not found: {product_id}")
+            return jsonify({'error': 'Cart item not found'}), 404
+
+        for item in cart_items:
+            session.delete(item)
+
+        try:
+            session.commit()
+            app.logger.info(f"Deleted product {product_id} from cart")
+            return jsonify({'success': 'Product deleted from cart'}), 200
+        except Exception as e:
+            session.rollback()
+            app.logger.error(f"Error during commit: {e}")
+            return jsonify({'error': 'Failed to delete product from cart'}), 500
+
+
+@app.route("/")
+def serve():
+    return render_template('index.html')
 
 
 if __name__ == '__main__':
-    app.run(debug=True, threaded=True)
+    app.run(host="0.0.0.0", port=5000, threaded=True, debug=True)

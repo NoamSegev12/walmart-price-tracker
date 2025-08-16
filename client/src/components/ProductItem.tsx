@@ -31,7 +31,6 @@ const ProductItem = ({product, setProducts, isSearchDisplay}: ProductItemProps) 
         showAlert('Failed to add product to cart. Please try again.', 'error');
         return;
       }
-      setProducts((prevProducts: Product[]) => [...prevProducts, product]);
       showAlert('Product added to cart.', 'success');
     } catch (err) {
       console.error('Failed to delete product:', err);

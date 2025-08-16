@@ -1,15 +1,16 @@
 from typing import Optional
-from sqlalchemy import Column, DateTime, create_engine
+from sqlalchemy import Column, DateTime, Integer, ForeignKey
 from sqlalchemy import String
-from sqlalchemy.orm import DeclarativeBase, Session
+from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 
 class Base(DeclarativeBase):
     pass
 
-class BaseProduct(Base):
-    __abstract__ = True
+class Product(Base):
+    __tablename__ = "Products"
+
     product_id: Mapped[str] = mapped_column(String(255), primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     current_price: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -33,8 +34,15 @@ class BaseProduct(Base):
             "last_update": self.last_update.isoformat() if self.last_update else None,
         }
 
-class Product(BaseProduct):
-    __tablename__ = "Products"
-
-class ShoppingCart(BaseProduct):
+class ShoppingCart(Base):
     __tablename__ = "ShoppingCart"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, nullable=False)
+
+    product_id: Mapped[str] = mapped_column(
+        String(255),
+        ForeignKey("Products.product_id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    product: Mapped["Product"] = relationship("Product")

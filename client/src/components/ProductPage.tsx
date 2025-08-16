@@ -6,7 +6,8 @@ import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import {Anchor} from '../styledComponents/Anchor.tsx';
 import {DeleteOutline} from '@mui/icons-material';
-import AddIcon from '@mui/icons-material/Add';
+import type {Product} from '../interfaces/Product';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 const ProductPage = ({
                        product,
@@ -16,6 +17,10 @@ const ProductPage = ({
                        handleDeleteFromCart,
                        isSearchDisplay
                      }: ProductPageProps) => {
+  const handleAddFromDialog = async (product: Product) => {
+    await handleAddToCart(product);
+    setOpenDialog(false);
+  }
   const handleDeleteFromDialog = async (product_id: string) => {
     await handleDeleteFromCart(product_id, 'cart');
     setOpenDialog(false);
@@ -48,14 +53,13 @@ const ProductPage = ({
             </Box>
           </Box>
           <Anchor href={product.product_url} target={'_blank'}>Walmart Link to {product.title}</Anchor>
-          <Typography>About this item:</Typography>
         </Box>
       </DialogContent>
       <DialogActions>
         <Button variant={'text'} sx={{marginTop: 2}} onClick={() => setOpenDialog(false)}>Close</Button>
         {
-          isSearchDisplay ? <Button endIcon={<AddIcon/>} sx={{marginTop: 2}}
-                                    onClick={() => handleAddToCart(product)}>Add</Button> :
+          isSearchDisplay ? <Button endIcon={<ShoppingCartIcon/>} sx={{marginTop: 2}}
+                                    onClick={() => handleAddFromDialog(product)}>Add</Button> :
             <Button variant={'outlined'} endIcon={<DeleteOutline/>} sx={{marginTop: 2}}
                     onClick={() => handleDeleteFromDialog(product.product_id)}>Delete
             </Button>

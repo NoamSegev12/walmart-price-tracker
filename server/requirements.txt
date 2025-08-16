@@ -1,5 +1,7 @@
 sqlalchemy
 flask
+requests
 psycopg2
 sqlalchemy-cockroachdb
 bs4
+psycopg2-binary
