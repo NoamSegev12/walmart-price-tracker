@@ -22,6 +22,8 @@ COPY server ./
 
 COPY --from=builder /app/dist ./static
 
+RUN mkdir "./templates"
+
 RUN cp ./static/index.html ./templates/
 
 EXPOSE 5000

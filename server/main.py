@@ -15,6 +15,7 @@ token = os.environ['SCRAPEDO_API_TOKEN']
 engine = create_engine(os.environ['DB_URL'])
 Base.metadata.create_all(engine)
 
+
 def safe_str(val):
     if isinstance(val, (dict, list)):
         return json.dumps(val, ensure_ascii=False)
@@ -34,12 +35,13 @@ def parse_walmart_item(item: dict) -> dict:
             or (item.get("product", {}) or {}).get("title")
             or (item.get("product", {}) or {}).get("name")
         ),
-        "current_price": (
+        "current_price": safe_str(
             item.get("price", {}).get("priceDisplay")
             if isinstance(item.get("price"), dict)
             else item.get("price")
         ),
-        "rating": item.get("averageRating") or item.get("rating"),
+        "rating": item.get("rating", {}).get("averageRating")
+        if isinstance(item.get("rating"), dict) else item.get("rating"),
         "image_url": safe_str(
             item.get("image", {}).get("url")
             if isinstance(item.get("image"), dict)
@@ -98,7 +100,7 @@ def search(query):
                             p["product_id"]: {
                                 "product_id": p["product_id"],
                                 "title": p["title"],
-                                "current_price": str(p["current_price"]),
+                                "current_price": p["current_price"],
                                 "rating": p["rating"],
                                 "image_url": p["image_url"],
                                 "product_url": p["product_url"],
@@ -247,4 +249,4 @@ def serve():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, threaded=True, debug=True)
+    app.run(host="0.0.0.0", port=5000, threaded=True)

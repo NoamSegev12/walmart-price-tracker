@@ -9,7 +9,14 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import type {SearchBarProps} from '../interfaces/SearchBarProps';
 import {useAlert} from '../contexts/UseAlert';
 
-const SearchBar = ({setProducts, setIsSearchDisplay, loading, setLoading, openFilterBar, setOpenFilterBar}: SearchBarProps) => {
+const SearchBar = ({
+                     setProducts,
+                     setIsSearchDisplay,
+                     loading,
+                     setLoading,
+                     openFilterBar,
+                     setOpenFilterBar
+                   }: SearchBarProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const {showAlert} = useAlert();
 
@@ -62,26 +69,32 @@ const SearchBar = ({setProducts, setIsSearchDisplay, loading, setLoading, openFi
     <>
       <AppBar sx={{zIndex: (theme) => theme.zIndex.drawer + 1}}>
         <Toolbar sx={{display: 'flex', justifyContent: 'space-between'}}>
-          <a href={'https://www.walmart.com'} target={'_blank'} rel={'noreferrer'}>
-            <img src={logo} alt={'Walmart logo'} width={40} height={40}/>
-          </a>
+          <Tooltip title={'Link to Walmart'}>
+            <a href={'https://www.walmart.com'} target={'_blank'} rel={'noreferrer'}>
+              <img src={logo} alt={'Walmart logo'} width={40} height={40}/>
+            </a>
+          </Tooltip>
           <Box sx={{display: 'flex', alignItems: 'center'}}>
-            <FilterIconWrapper onClick={() => setOpenFilterBar(!openFilterBar)} disabled={loading}>
-              <FilterListIcon/>
-            </FilterIconWrapper>
+            <Tooltip title={'Filter Products'}>
+              <FilterIconWrapper onClick={() => setOpenFilterBar(!openFilterBar)} disabled={loading}>
+                <FilterListIcon/>
+              </FilterIconWrapper>
+            </Tooltip>
             <Search>
               <StyledSearchField
                 placeholder={'Search...'}
                 disabled={loading}
                 onChange={e => setSearchTerm(e.target.value)}
               />
-              <SearchIconWrapper onClick={handleSearch} disabled={!searchTerm || loading}>
-                <SearchIcon/>
-              </SearchIconWrapper>
+              <Tooltip title={'Search'}>
+                <SearchIconWrapper onClick={handleSearch} disabled={!searchTerm || loading}>
+                  <SearchIcon/>
+                </SearchIconWrapper>
+              </Tooltip>
             </Search>
           </Box>
           <div>
-            <Tooltip title={'Followed Items'}>
+            <Tooltip title={'History'}>
               <TurnedInNotIcon sx={{marginLeft: 2, cursor: 'pointer'}} onClick={handleSearchedItems}/>
             </Tooltip>
             <Tooltip title={'My Shopping Cart'}>
